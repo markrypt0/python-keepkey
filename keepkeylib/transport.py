@@ -89,6 +89,8 @@ class Transport(object):
             return None
 
         data = self._read()
+        # print("data in read")
+        # print(data)
         if data is None:
             return None
 
@@ -98,11 +100,15 @@ class Transport(object):
         """
         Same as read, except blocks untill data is available to be read.
         """
+        while not self.ready_to_read():
+            continue
+
         while True:
             data = self._read()
             if data != None:
                 break
-
+        # print("data in read_blocking len", len(data[1]))
+        # print(data)
         return self._parse_message(data)
 
     def bridge_read_blocking(self):
@@ -126,7 +132,7 @@ class Transport(object):
             inst.ParseFromString(data)
             return inst
 
-    def _read_headers(self, read_f):
+    def _read_headers(self, read_f, timeout=64):
         # Try to read headers until some sane value are detected
         is_ok = False
         while not is_ok:
@@ -136,7 +142,7 @@ class Transport(object):
             i = 0
             while c != b"#":
                 i += 1
-                if i >= 64:
+                if i >= timeout:
                     # timeout
                     raise Exception("Timed out while waiting for the magic character")
                 c = read_f.read(1)

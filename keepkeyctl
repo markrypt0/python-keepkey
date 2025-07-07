@@ -5,7 +5,7 @@
 # Copyright (C) 2012-2016 Marek Palatinus <slush@satoshilabs.com>
 # Copyright (C) 2012-2016 Pavol Rusnak <stick@satoshilabs.com>
 # Copyright (C) 2016      Jochen Hoenicke <hoenicke@gmail.com>
-# Copyright (C) 2022      markrypto <cryptoakorn@gmail.com>
+# Copyright (C) 2022-2025      markrypto <cryptoakorn@gmail.com>
 #
 # This library is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -38,7 +38,7 @@ import keepkeylib.types_pb2 as types
 def parse_args(commands):
     parser = argparse.ArgumentParser(description='Commandline tool for KeepKey devices.')
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Prints communication to device')
-    parser.add_argument('-t', '--transport', dest='transport',  choices=['usb', 'serial', 'pipe', 'socket', 'bridge', 'udp', 'webusb'], help="Transport used for talking with the device")
+    parser.add_argument('-t', '--transport', dest='transport',  choices=['ble', 'usb', 'serial', 'pipe', 'socket', 'bridge', 'udp', 'webusb'], help="Transport used for talking with the device")
     parser.add_argument('-p', '--path', dest='path', default='', help="Path used by the transport (usually serial port)")
     parser.add_argument('-Dt', '--debuglink-transport', dest='debuglink_transport', choices=['usb', 'serial', 'pipe', 'socket', 'bridge', 'udp', 'webusb'], default='usb', help="Debuglink transport")
     parser.add_argument('-Dp', '--debuglink-path', dest='debuglink_path', default='', help="Path used by the transport (usually serial port)")
@@ -92,8 +92,6 @@ def get_webusb_transport(path, **kwargs):
 
     raise Exception("Device not found")
 
-
-
 def get_transport(transport_string, path, **kwargs):
 
     # if no transport is specified try both hid and webusb
@@ -116,6 +114,10 @@ def get_transport(transport_string, path, **kwargs):
             return transport
 
         raise Exception("Device not found")
+
+    if transport_string == 'ble':
+        from keepkeylib.transport_ble import BleTransport
+        return BleTransport(path, **kwargs)
 
     if transport_string == 'usb':
         return get_hid_transport(path, **kwargs)
