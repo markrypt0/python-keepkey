@@ -92,7 +92,7 @@ def main():
 
     # Implement a write/read loop for BLE
     # data = b'1234567890'
-    
+  
     
     # f = open("./helloworld.py", "rb")
     # mbuf = f.read()
