@@ -87,7 +87,7 @@ class BLECLIENT:
           # print("slice s ", s)
           # print(sctr)
           sctr+=1
-          await client.write_gatt_char(self.rx_char, s, response=True)
+          await client.write_gatt_char(self.rx_char, bytes(s), response=True)
         print("sent %d bytes:" % len(self.txbuffer), self.txbuffer)
         self.txbuffer=""
         self.txReady = False
