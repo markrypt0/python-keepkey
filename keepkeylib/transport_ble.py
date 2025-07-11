@@ -38,9 +38,11 @@ class BleTransport(Transport):
     self.loop = asyncio.get_event_loop()
     self.bc = BLECLIENT()
     super(BleTransport, self).__init__(device, *args, **kwargs)
-   
+
   def _open(self, name="kkcomm-server"):
     self.loop.run_until_complete(self.bc.scanForDevice(name))
+    if self.bc.device == None:
+      raise IOError("No bluetooth device 'kkcom-server'", *args)
     return
     
   def _close(self):
@@ -53,15 +55,11 @@ class BleTransport(Transport):
     self.bc.txbuffer = bytearray()
     msg = bytearray(msg)
 
-    # add reportID
+    # add reportID, "?" to first frame only. If message is >1 frame, reportId's will 
+    # be added by the kkcomm bridge. This is to keep msgLen in sync with data in 
+    # the transfer buffer on kkcomm.
     self.bc.txbuffer = ([63, ] + list(msg[:len(msg)]))
-    msgLen = len(self.bc.txbuffer)
-    indx = 64
-    while msgLen > 64:
-      self.bc.txbuffer.insert(indx, 63)
-      msgLen = len(self.bc.txbuffer[indx:])
-      indx += 64
-      
+
     # print(".............writing in transport_ble")
     # print(self.bc.txbuffer)
 
@@ -86,6 +84,10 @@ class BleTransport(Transport):
     #   print("read exception ", e)
     #   print("exiting...")
     #   sys.exit()
+    
+    while not self.ready_to_read():
+      continue
+
     
     data = self.bc.dataRx
     # "?##"+<2_byte_msg_type>+<4_byte_msg_len>+<msg>

@@ -67,7 +67,6 @@ class BLECLIENT:
 
     if self.device is None:
         print("No device named %s found." % name)
-        sys.exit()
     
   async def bleHandler(self):
     print("handler entry")

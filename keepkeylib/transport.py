@@ -100,9 +100,6 @@ class Transport(object):
         """
         Same as read, except blocks untill data is available to be read.
         """
-        while not self.ready_to_read():
-            continue
-
         while True:
             data = self._read()
             if data != None:
