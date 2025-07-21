@@ -71,20 +71,9 @@ class bleSigntxSegwit(KeepKeyTestBle):
     print("signature: \n", hexlify(serialized_tx))
     print("expected: \n", b'0100000000010137c361fb8f2d9056ba8c98c5611930fcb48cacfdd0fe2e0449d83eea982f91200000000017160014d16b8c0680c61fc6ed2e407455715055e41052f5ffffffff02e0aebb00000000001976a91414fdede0ddc3be652a0ce1afbc1b509a55b6b94888ac3df39f060000000017a91458b53ea7f832e8f096e896b8713a8c6df0e892ca8702483045022100ccd253bfdf8a5593cd7b6701370c531199f0f05a418cd547dfc7da3f21515f0f02203fa08a0753688871c220648f9edadbdb98af42e5d8269364a326572cf703895b012103e7bfe10708f715e8538c92d46ca50db6f657bbc455b7494e6a0303ccdb868b7900000000')
 
-  def test_message_long(self):
-    self.setup_mnemonic_nopin_nopassphrase()
-    ret = self.client.verify_message(
-      'Bitcoin',
-      '1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T',
-      unhexlify('1bddc0aed9cf4e10dc9f57770934f4fb72a27c4510a0f4a81e09c163552416f799cd3f211ffeed0f411e9af9b927407d67115fb6d0ab1897137048efe33417fcc1'),
-      "VeryLongMessage!" * 64
-    )
-
-
 def main():
   
-  # bleSigntxSegwit().test_send_p2sh()
-  bleSigntxSegwit().test_message_long()
+  bleSigntxSegwit().test_send_p2sh()
   return
   
 if __name__ == '__main__':
