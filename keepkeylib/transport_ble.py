@@ -18,11 +18,11 @@ import logging
 import sys
 import time
 import atexit
+from enum import Enum
 
 from .transport import Transport, ConnectionError
 
 from .bleClient import BLECLIENT
-
 
 class FakeRead(object):
     # Let's pretend we have a file-like interface
@@ -42,7 +42,19 @@ class BleTransport(Transport):
   def _open(self, name="kkcomm-server"):
     self.loop.run_until_complete(self.bc.scanForDevice(name))
     if self.bc.device == None:
-      raise IOError("No bluetooth device 'kkcom-server'", *args)
+      raise IOError("No bluetooth device 'kkcom-server'")
+    else:
+      # put kkcomm bridge in usb xfer mode
+      self.bc.txbuffer = bytearray()
+      self.bc.txbuffer = bytearray("\x11\x11\x11\x11", "utf-8")
+      self.bc.txReady = True
+      try:
+        self.loop.run_until_complete(self.bc.bleWriteHandler(cmdMode=True))
+      except Exception as e:
+        print("exception ", e)
+        print("exiting...")
+        sys.exit()
+
     return
     
   def _close(self):

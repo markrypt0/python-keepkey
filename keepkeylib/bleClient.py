@@ -58,7 +58,7 @@ class BLECLIENT:
     # print(rx_data)
     if (rx_data[:10] == bytearray(b'readready\x00')):
       self.readReady = True
-      print("NOTIFIED: ready to read")
+      # print("NOTIFIED: ready to read")
     else:
       print("Error: ", rx_data)
   
@@ -69,7 +69,7 @@ class BLECLIENT:
         print("No device named %s found." % name)
     
   async def bleHandler(self):
-    print("handler entry")
+    print("bluetooth transmitting..")
     # this does the full write-get_notified-read loop to make comm more efficient
   
     async with BleakClient(self.device, disconnected_callback=self._handle_disconnect) as client:
@@ -87,7 +87,7 @@ class BLECLIENT:
           # print(sctr)
           sctr+=1
           await client.write_gatt_char(self.rx_char, bytes(s), response=True)
-        print("sent %d bytes:" % len(self.txbuffer), self.txbuffer)
+        # print("sent %d bytes:" % len(self.txbuffer), self.txbuffer)
         self.txbuffer=""
         self.txReady = False
         self.readFinished = False
@@ -96,9 +96,12 @@ class BLECLIENT:
         while self.readReady == False:
           await asyncio.sleep(0)
 
+      # Turn notify off 
+      await client.stop_notify(BLE_SVC_SPP_CHR_UUID16)
+
       # now read
       
-      # print("ble reading")
+      print("bluetooth receiving..")
       self.readReady = False
       try:
         rxData = await client.read_gatt_char(self.rx_char)
@@ -128,12 +131,12 @@ class BLECLIENT:
       self.readFinished = True
       # print("ready to read")
       # print(self.dataRx)
-      print("ble handler exit")
+      # print("ble handler exit")
         
       return
     
 
-  async def bleWriteHandler(self):
+  async def bleWriteHandler(self, cmdMode=False):
     async with BleakClient(self.device, disconnected_callback=self._handle_disconnect) as client:
       nus = client.services.get_service(BLE_SVC_SPP_UUID16)
       # print("Connected...")
@@ -141,22 +144,30 @@ class BLECLIENT:
       self.rx_char = nus.get_characteristic(BLE_SVC_SPP_CHR_UUID16)
       
       if self.txReady:
-        await client.start_notify(BLE_SVC_SPP_CHR_UUID16, self._handle_notify)
-        # self.rx_char = nus.get_characteristic(BLE_SVC_SPP_CHR_UUID16)
+        if cmdMode == True:
+          # command mode not implemented yet, will need it's own notify handling
+          pass
+        else:
+          await client.start_notify(BLE_SVC_SPP_CHR_UUID16, self._handle_notify)
+
         sctr = 0
         for s in sliced(self.txbuffer, 20):
           # print("slice s ", s)
           # print(sctr)
           sctr+=1
           await client.write_gatt_char(self.rx_char, s, response=True)
-        print("sent %d bytes:" % len(self.txbuffer), self.txbuffer)
+        # print("sent %d bytes:" % len(self.txbuffer), self.txbuffer)
         self.txbuffer=""
         self.txReady = False
         self.readFinished = False
-        
-        # wait for notification of read ready to prevent disconnect
-        while self.readReady == False:
-          await asyncio.sleep(0)
+
+        if cmdMode == True:
+          # command mode not implemented yet, will need readback processing
+          self.readFinished = True
+        else:
+          # wait for notification of read ready to prevent disconnect
+          while self.readReady == False:
+            await asyncio.sleep(0)
 
       return
     

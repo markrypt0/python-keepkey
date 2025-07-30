@@ -136,6 +136,23 @@ https://github.com/keepkey/python-keepkey/releases
 When running the KeepKey Bridge, a blank cmd window with the title "KepKey Bridge" will be visible. 
 To stop the bridge, simply close the cmd window.
 
+Bluetooth LE transport
+======================
+The BLE transport is designed to work with the **kkcom bridge** hardware to provide transparent bluetooth LE 
+communication, so that a keepkey can be used without directly being plugged in to a host computer. The BLE transport is
+implemented as transport_ble.py along with a client bleClient.py. This transport requires the Bleak python 
+package https://pypi.org/project/bleak/. This has been tested on linux and macos environments. To verify, 
+use the cmdkk prompt to execute a command such as:
+
+$ python cmdkk.py -t ble get_features
+
+debuglink is not implemented so automated tests will not run with auto_button. There are a limited number of tests
+implemented in the ./bletest directory. These tests can only be run interactively and require manual button pressing,
+for example:
+
+$ python bletest_signtx.py
+
+
 Build for Windows
 -----------------
 Requirements:
